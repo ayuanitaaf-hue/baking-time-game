@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Masak & Jual Kue</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, #fff0f5, #e6fff2);
+      display: flex;
+      justify-content: center;
+      padding: 40px;
+    }
+    .container {
+      background: #fffafc;
+      border: 2px solid #ffc1cc;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(255, 182, 193, 0.3);
+      padding: 30px;
+      width: 380px;
+      text-align: center;
+    }
+    h1 {
+      color: #d6336c;
+      margin-bottom: 20px;
+    }
+    select, input {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ffc1cc;
+      margin-bottom: 15px;
+      font-size: 1em;
+      width: 90%;
+    }
+    .step {
+      font-size: 1.1em;
+      margin-bottom: 15px;
+      color: #006644;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      background: #ffb6c1;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 5px;
+      transition: transform 0.2s, background 0.3s;
+    }
+    button:hover {
+      background: #90ee90;
+      transform: scale(1.05);
+    }
+    button:active {
+      transform: scale(0.95);
+    }
+    .store {
+      margin-top: 20px;
+      background: #f0fff0;
+      border: 1px solid #c1ffc1;
+      border-radius: 10px;
+      padding: 15px;
+    }
+    .cake-image {
+      width: 100px;
+      height: 100px;
+      margin: 10px auto;
+      border-radius: 12px;
+      background-size: cover;
+      background-position: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Masak & Jual Kue 🍰</h1>
+    <input type="text" id="namaPemain" placeholder="Nama kamu" />
+    <select id="resep" onchange="pilihResep()">
+      <option value="">Pilih Resep Kue</option>
+      <option value="coklat">Kue Coklat</option>
+      <option value="stroberi">Kue Stroberi</option>
+      <option value="keju">Kue Keju</option>
+    </select>
+    <div class="step" id="step">Pilih resep untuk mulai memasak.</div>
+    <button onclick="nextStep()">Langkah Berikutnya</button>
+    <button onclick="resetGame()">Ulangi Masak</button>
+
+    <div class="store" id="store" style="display:none;">
+      <h2>Toko Kue 🛍️</h2>
+      <div class="cake-image" id="cakeImage"></div>
+      <p id="cakeCount">Kue tersedia: 0</p>
+      <p id="uang">Uang: Rp0</p>
+      <select id="pilihAlat">
+        <option value="">Pilih alat untuk dibeli</option>
+        <option value="Mixer Otomatis">Mixer Otomatis (Rp10.000)</option>
+        <option value="Oven Turbo">Oven Turbo (Rp15.000)</option>
+        <option value="Cetakan Kue Unik">Cetakan Kue Unik (Rp8.000)</option>
+      </select>
+      <button onclick="beliAlatBaru()">Beli Alat</button>
+      <button onclick="sellCake()">Jual Kue (Rp5.000)</button>
+      <p id="sales">Penjualan: 0 kue</p>
+      <p id="alat">Alat: Mixer Biasa</p>
+      <p id="pelanggan">Pelanggan: Menunggu kue...</p>
+    </div>
+  </div>
+
+  <script>
+    const resepLangkah = {
+      coklat: [
+        "Campurkan tepung dan coklat bubuk.",
+        "Tambahkan telur dan mentega.",
+        "Aduk hingga rata.",
+        "Tuang ke loyang.",
+        "Panggang 30 menit.",
+        "Kue Coklat selesai! 🎉"
+      ],
+      stroberi: [
+        "Campurkan tepung dan gula.",
+        "Tambahkan stroberi dan telur.",
+        "Aduk hingga halus.",
+        "Tuang ke loyang.",
+        "Panggang 25 menit.",
+        "Kue Stroberi selesai! 🎉"
+      ],
+      keju: [
+        "Campurkan tepung dan keju parut.",
+        "Tambahkan telur dan susu.",
+        "Aduk hingga lembut.",
+        "Tuang ke loyang.",
+        "Panggang 35 menit.",
+        "Kue Keju selesai! 🎉"
+      ]
+    };
+
+    const cakeImages = {
+      coklat: "https://i.imgur.com/1Xj9JXr.png",
+      stroberi: "https://i.imgur.com/4ZJXxvZ.png",
+      keju: "https://i.imgur.com/7g7QZKx.png"
+    };
+
+    const alatList = {
+      "Mixer Otomatis": { harga: 10000, efek: "Aduk cepat" },
+      "Oven Turbo": { harga: 15000, efek: "Panggang cepat" },
+      "Cetakan Kue Unik": { harga: 8000, efek: "Bentuk lucu" }
+    };
+
+    let currentStep = 0;
+    let selectedResep = "";
+    let cakeCount = 0;
+    let sales = 0;
+    let uang = 0;
+    let alat = "Mixer Biasa";
+
+    function pilihResep() {
+      selectedResep = document.getElementById("resep").value;
+      currentStep = 0;
+      if (selectedResep) {
+        document.getElementById("step").textContent = resepLangkah[selectedResep][0];
+        document.getElementById("store").style.display = "none";
+        document.getElementById("cakeImage").style.backgroundImage = `url(${cakeImages[selectedResep]})`;
+      }
+    }
+
+    function nextStep() {
+      if (!selectedResep) return;
+      currentStep++;
+      const langkah = resepLangkah[selectedResep];
+      if (currentStep < langkah.length) {
+        document.getElementById("step").textContent = langkah[currentStep];
+      } else {
+        cakeCount++;
+        document.getElementById("step").textContent = langkah[langkah.length - 1];
+        document.getElementById("store").style.display = "block";
+        updateStore();
+      }
+    }
+
+    function resetGame() {
+      currentStep = 0;
+      selectedResep = document.getElementById("resep").value;
+      if (selectedResep) {
+        document.getElementById("step").textContent = resepLangkah[selectedResep][0];
+      } else {
+        document.getElementById("step").textContent = "Pilih resep untuk mulai memasak.";
+      }
+    }
+
+    function sellCake() {
+      if (cakeCount > 0) {
+        cakeCount--;
+        sales++;
+        uang += 5000;
+        updateStore();
+        document.getElementById("pelanggan").textContent = "Pelanggan: Terima kasih, " + (document.getElementById("namaPemain").value || "Koki") + "! 🍰";
+      } else {
+        alert("Tidak ada kue untuk dijual. Masak dulu ya!");
+      }
+    }
+
+    function beliAlatBaru() {
+      const pilihan = document.getElementById("pilihAlat").value;
+      if (pilihan && alatList[pilihan]) {
+        const harga = alatList[pilihan].harga;
+        if (uang >= harga) {
+          uang -= harga;
+          alat = pilihan;
+          alert(`${pilihan} berhasil dibeli! Fungsi: ${alatList[pilihan].efek}`);
+          updateStore();
+        } else {
+          alert("Uang tidak cukup untuk membeli alat ini.");
+        }
+      }
+    }
+
+    function updateStore() {
+      document.getElementById("cakeCount").textContent = "Kue tersedia: " + cakeCount;
+      document.getElementById("sales").textContent = "Penjualan: " + sales + " kue";
+      document.getElementById("uang").textContent = "Uang
